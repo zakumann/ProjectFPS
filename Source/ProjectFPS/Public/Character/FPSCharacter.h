@@ -42,6 +42,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
 	TObjectPtr<UInputAction> SprintAction;
 
+	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
+	TObjectPtr<UInputAction> CrouchAction;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -58,6 +61,10 @@ protected:
 	// Sprint
 	void StartSprint();
 	void StopSprint();
+
+	// Crouch
+	void StartCrouch();
+	void StopCrouch();
 
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float WalkSpeed;
