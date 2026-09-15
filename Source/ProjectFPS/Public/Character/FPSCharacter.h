@@ -23,6 +23,12 @@ public:
 	// Sets default values for this character's properties
 	AFPSCharacter();
 
+	void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
+
+	void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
+
+	void CalcCamera(float DeltaTime, struct FMinimalViewInfo& OutResult) override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -71,4 +77,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	float RunSpeed;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crouch")
+	FVector CrouchEyeOffset;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crouch")
+	float CrouchSpeed;
 };

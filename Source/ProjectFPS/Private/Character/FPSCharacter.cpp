@@ -20,6 +20,9 @@ AFPSCharacter::AFPSCharacter()
 	FirstPersonCamera->SetupAttachment(RootComponent);
 	FirstPersonCamera->SetRelativeLocation(FVector(0.f, 0.f, 60.f));
 	FirstPersonCamera->bUsePawnControlRotation = true;
+
+	CrouchEyeOffset = FVector(0.0f);
+	CrouchSpeed = 12.0f;
 }
 
 // Called when the game starts or when spawned
@@ -42,6 +45,8 @@ void AFPSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	float CrouchInterpTime = FMath::Min(1.0f, CrouchSpeed * DeltaTime);
+	CrouchEyeOffset = (1.0f - CrouchInterpTime) * CrouchEyeOffset;
 }
 
 // Called to bind functionality to input
@@ -114,3 +119,36 @@ void AFPSCharacter::StopCrouch()
 	UnCrouch();
 }
 
+void AFPSCharacter::OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
+{
+	if (HalfHeightAdjust == 0.0f)
+	{
+		return;
+	}
+
+	float StartBaseEyeHeight = BaseEyeHeight;
+	Super::OnStartCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
+	CrouchEyeOffset.Z += StartBaseEyeHeight - BaseEyeHeight + HalfHeightAdjust;
+	FirstPersonCamera->SetRelativeLocation(FVector(0.0f, 0.0f, BaseEyeHeight), false);
+}
+
+void AFPSCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
+{
+	if (HalfHeightAdjust == 0.0f)
+	{
+		return;
+	}
+	float StartBaseEyeHeight = BaseEyeHeight;
+	Super::OnEndCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
+	CrouchEyeOffset.Z += StartBaseEyeHeight - BaseEyeHeight - HalfHeightAdjust;
+	FirstPersonCamera->SetRelativeLocation(FVector(0.0f, 0.0f, BaseEyeHeight), false);
+}
+
+void AFPSCharacter::CalcCamera(float DeltaTime, struct FMinimalViewInfo& OutResult)
+{
+	if (FirstPersonCamera)
+	{
+		FirstPersonCamera->GetCameraView(DeltaTime, OutResult);
+		OutResult.Location += CrouchEyeOffset;
+	}
+}
