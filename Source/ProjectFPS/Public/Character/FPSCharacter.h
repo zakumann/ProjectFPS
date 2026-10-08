@@ -10,29 +10,22 @@
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
+class USkeletalMeshComponent;
 
 UCLASS()
 class PROJECTFPS_API AFPSCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UCameraComponent> FirstPersonCamera;
-
 public:
 	// Sets default values for this character's properties
 	AFPSCharacter();
-
-	void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
-
-	void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
-
-	void CalcCamera(float DeltaTime, struct FMinimalViewInfo& OutResult) override;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// ====== Enhanced Input ======
 	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;
 
@@ -51,6 +44,37 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "EnhancedInput")
 	TObjectPtr<UInputAction> CrouchAction;
 
+	// ==== Components ====
+	UPROPERTY(VisibleAnywhere, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UCameraComponent> FirstPersonCamera;
+
+		/** FirstPerson Arm Mesh */
+	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<USkeletalMeshComponent> FirstPersonArmMesh;
+
+	// ==== Mesh Offset ====
+	//** Camera Arm MeshOffset */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh|Offset")
+	FVector ArmMeshRelativeLocation = FVector(0.0f, 0.0f, -160.0f);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh|Offset")
+	FRotator ArmMeshRelativeRotation = FRotator(0.0f, -90.0f, 0.0f);
+
+	// ==== Movement ====
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float WalkSpeed = 400.0f;;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float RunSpeed = 700.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Movement|Crouch")
+	float CrouchTransitionSpeed = 12.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Movement|Crouch")
+	float DefaultCameraZ = 64.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Movement|Crouch")
+	float CrouchedCameraZ = 30.0f;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -62,7 +86,6 @@ protected:
 	// Input functions
 	void Move(const FInputActionValue& InputValue);
 	void Look(const FInputActionValue& InputValue);
-	void Jump();
 
 	// Sprint
 	void StartSprint();
@@ -72,15 +95,15 @@ protected:
 	void StartCrouch();
 	void StopCrouch();
 
-	UPROPERTY(EditAnywhere, Category = "Movement")
-	float WalkSpeed;
+	void TryUnCrouch();
 
-	UPROPERTY(EditAnywhere, Category = "Movement")
-	float RunSpeed;
+private:
+	float TargetCameraZ;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crouch")
-	FVector CrouchEyeOffset;
+	// Sprint state
+	bool bIsSprinting = false;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Crouch")
-	float CrouchSpeed;
+	// Crouch state
+	bool bWantsToSprint = false;
+	bool bWantsToCrouch = false;
 };
