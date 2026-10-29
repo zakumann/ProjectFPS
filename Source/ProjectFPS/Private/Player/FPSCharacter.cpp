@@ -8,6 +8,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Weapon/Weapon.h"
 
 // Sets default values
 AFPSCharacter::AFPSCharacter()
@@ -56,6 +57,24 @@ void AFPSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	// 테스트용 시작 무기 (기본은 비어 있음)
+	if (UWorld* World = GetWorld())
+	{
+		FActorSpawnParameters Params;
+		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		for (const TSubclassOf<AWeapon>& WeaponClass : StartingWeaponClasses)
+		{
+			if (!WeaponClass)
+			{
+				continue;
+			}
+			if (AWeapon* Spawned = World->SpawnActor<AWeapon>(WeaponClass, GetActorTransform(), Params))
+			{
+				PickupWeapon(Spawned);
+			}
+		}
+	}
 }
 
 // Called every frame
@@ -82,7 +101,56 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	EIC->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 	EIC->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 	EIC->BindAction(CrouchAction, ETriggerEvent::Started, this, &AFPSCharacter::ToggleCrouch);
+	
+	for (int32 i = 0; i < EquipSlotActions.Num(); ++i)
+	{
+		EIC->BindAction(EquipSlotActions[i], ETriggerEvent::Started, this, &AFPSCharacter::EquipSlot, i + 1);
+	}
 }
+// --------------------
+// Weapon
+// --------------------
+bool AFPSCharacter::PickupWeapon(AWeapon* Weapon)
+{
+	if (!Weapon || Weapon->IsPickedUp())
+	{
+		return false;
+	}
+
+	const int32 SlotNumber = Weapon->GetWeaponSlot();
+	if (SlotNumber < 1 || WeaponSlots.Contains(SlotNumber))
+	{
+		return false; // 같은 슬롯에 이미 무기가 있으면 월드에 그대로 둔다
+	}
+
+	WeaponSlots.Add(SlotNumber, Weapon);
+	Weapon->OnPickedUp(this, FirstPersonArmMesh);
+	Weapon->SetEquipped(false);
+
+	if (bAutoEquipOnPickup || !CurrentWeapon)
+	{
+		EquipSlot(SlotNumber);
+	}
+	return true;
+}
+
+void AFPSCharacter::EquipSlot(int32 SlotNumber)
+{
+	const TObjectPtr<AWeapon>* Found = WeaponSlots.Find(SlotNumber);
+	if (!Found || !*Found || *Found == CurrentWeapon)
+	{
+		return;
+	}
+
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->SetEquipped(false);
+	}
+
+	CurrentWeapon = *Found;
+	CurrentWeapon->SetEquipped(true);
+}
+
 
 void AFPSCharacter::Move(const FInputActionValue& Value)
 {
