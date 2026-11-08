@@ -13,12 +13,7 @@
     <Project Path="Intermediate/ProjectFiles/UE5.vcxproj" Id="3a6354a8-28d6-3f8f-aec1-2b1fdb4cac94">
       <BuildType Project="BuiltWithUnrealBuildTool" />
       <Platform Project="Win64" />
-      <Build Solution="*|Win64-arm64" Project="false" />
-      <Build Solution="*|Win64-arm64ec" Project="false" />
-      <Build Solution="DebugGame|Win64" Project="false" />
-      <Build Solution="Development Editor|Win64" Project="false" />
-      <Build Solution="Development|Win64" Project="false" />
-      <Build Solution="Shipping|Win64" Project="false" />
+      <Build Project="false" />
     </Project>
   </Folder>
   <Folder Name="/Games/">
