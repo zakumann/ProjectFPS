@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Data/WeaponData.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Combat/CombatComponent.h"
@@ -72,6 +73,21 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	EIC->BindAction(AimWeaponAction, ETriggerEvent::Started, this, &ThisClass::Input_Aim_Pressed);
 	EIC->BindAction(AimWeaponAction, ETriggerEvent::Completed, this, &ThisClass::Input_Aim_Released);
 	EIC->BindAction(ReloadWeaponAction, ETriggerEvent::Started, this, &ThisClass::Input_ReloadWeapon);
+}
+
+void AFPSCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	if (IsValid(Combat))
+	{
+		Combat->SpawnInventory();
+	}
+}
+
+FName AFPSCharacter::GetWeaponAttachPoint_Implementation(const FGameplayTag& WeaponType) const
+{
+	checkf(Combat->WeaponData, TEXT("No Weapon Data Asset - Please fill out BP_FPSCharacter"));
+	return Combat->WeaponData->GripPoints.FindChecked(WeaponType);
 }
 
 void AFPSCharacter::Input_CycleWeapon()

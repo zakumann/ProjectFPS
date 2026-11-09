@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Interfaces/PlayerInterface.h"
 #include "FPSCharacter.generated.h"
 
 class USkeletalMeshComponent;
@@ -13,7 +14,7 @@ class UInputAction;
 class UCombatComponent;
 
 UCLASS()
-class PROJECTFPS_API AFPSCharacter : public ACharacter
+class PROJECTFPS_API AFPSCharacter : public ACharacter, public IPlayerInterface
 {
 	GENERATED_BODY()
 
@@ -26,6 +27,13 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void PossessedBy(AController* NewController) override;
+
+	/** PlayerInterface */
+	virtual FName GetWeaponAttachPoint_Implementation(const FGameplayTag& WeaponType) const override;
+	/** ~PlayerInterface */
+
 
 protected:
 	// Called when the game starts or when spawned

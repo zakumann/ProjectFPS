@@ -14,7 +14,7 @@ AWeapon::AWeapon()
 	Mesh1P->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
 	Mesh1P->bReceivesDecals = false;
 	Mesh1P->CastShadow = false;
-	Mesh1P->SetHiddenInGame(true);
+	//Mesh1P->SetHiddenInGame(true);
 	SetRootComponent(Mesh1P);
 
 }
