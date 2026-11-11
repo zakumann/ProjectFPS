@@ -32,12 +32,14 @@ public:
 
 	/** PlayerInterface */
 	virtual FName GetWeaponAttachPoint_Implementation(const FGameplayTag& WeaponType) const override;
+	virtual USkeletalMeshComponent* GetMesh1P_Implementation() const override;
 	/** ~PlayerInterface */
 
+	virtual void BeginPlay() override;
+	virtual void BeginDestroy() override;
 
 protected:
 	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
 private:
 

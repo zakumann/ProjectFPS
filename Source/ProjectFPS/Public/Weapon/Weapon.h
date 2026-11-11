@@ -17,14 +17,19 @@ public:
 
 	USkeletalMeshComponent* GetMesh1P() const;
 
+	void AttachToOwningPawn() const;
+
+	UPROPERTY(EditAnywhere, Category = "FPS|WeaponType")
+	FGameplayTag WeaponType;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, Category = "FPS|WeaponType")
-	FGameplayTag WeaponType;
 private:
 	// Weapon Mesh: 1st person view
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USkeletalMeshComponent> Mesh1P;
+
+	void SetMeshVisibilities(APawn* OwningPawn) const;
 };

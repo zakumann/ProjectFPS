@@ -76,22 +76,41 @@ void UCombatComponent::Initiate_Aim_Released()
 		false);
 }
 
+void UCombatComponent::Equip(AWeapon* Weapon)
+{
+	CurrentWeapon = Weapon;
+	CurrentWeapon->AttachToOwningPawn();
+}
+
 void UCombatComponent::SpawnInventory()
 {
-	AWeapon* NewWeapon = SpawnWeapon(DefaultWeaponClass);
+	for (TSubclassOf<AWeapon>& WeaponClass : DefaultWeaponClasses)
+	{
+		AWeapon* Weapon = SpawnWeapon(WeaponClass);
+		Inventory.AddUnique(Weapon);
+	}
 
+	if (Inventory.Num() > 0)
+	{
+		Equip(Inventory[0]);
+	}
 }
 
 void UCombatComponent::DestroyInventory()
 {
-	// TODO: Destroy the inventory once we have one.
+	for (AWeapon* Weapon : Inventory)
+	{
+		if (IsValid(Weapon))
+		{
+			Weapon->Destroy();
+		}
+	}
 }
 
 AWeapon* UCombatComponent::SpawnWeapon(TSubclassOf<AWeapon> WeaponClass) const
 {
 	AActor* OwningActor = GetOwner();
 	if (!IsValid(OwningActor)) return nullptr;
-	if (OwningActor->GetLocalRole() < ROLE_Authority) return nullptr;
 
 	FActorSpawnParameters SpawnInfo;
 	SpawnInfo.Instigator = Cast<APawn>(OwningActor);

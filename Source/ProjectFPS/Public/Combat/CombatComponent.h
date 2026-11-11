@@ -33,13 +33,20 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "FPS|Weapon")
 	TObjectPtr<UWeaponData> WeaponData;
 
+	void Equip(AWeapon* Weapon);
 	void SpawnInventory();
 	void DestroyInventory();
 protected:
 
 private:
+	UPROPERTY(Transient)
+	TObjectPtr<AWeapon> CurrentWeapon;
+
+	UPROPERTY(Transient)
+	TArray<AWeapon*> Inventory;
+
 	UPROPERTY(EditDefaultsOnly, Category = "FPS|Weapon")
-	TSubclassOf<AWeapon> DefaultWeaponClass;
+	TArray<TSubclassOf<AWeapon>> DefaultWeaponClasses;
 
 	AWeapon* SpawnWeapon(TSubclassOf<AWeapon> WeaponClass) const;
 };

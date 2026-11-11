@@ -53,6 +53,15 @@ void AFPSCharacter::BeginPlay()
 	
 }
 
+void AFPSCharacter::BeginDestroy()
+{
+	Super::BeginDestroy();
+	if (IsValid(Combat))
+	{
+		Combat->DestroyInventory();
+	}
+}
+
 // Called every frame
 void AFPSCharacter::Tick(float DeltaTime)
 {
@@ -88,6 +97,11 @@ FName AFPSCharacter::GetWeaponAttachPoint_Implementation(const FGameplayTag& Wea
 {
 	checkf(Combat->WeaponData, TEXT("No Weapon Data Asset - Please fill out BP_FPSCharacter"));
 	return Combat->WeaponData->GripPoints.FindChecked(WeaponType);
+}
+
+USkeletalMeshComponent* AFPSCharacter::GetMesh1P_Implementation() const
+{
+	return Mesh1P;
 }
 
 void AFPSCharacter::Input_CycleWeapon()
