@@ -19,8 +19,11 @@ public:
 
 	void AttachToOwningPawn() const;
 
-	UPROPERTY(EditAnywhere, Category = "FPS|WeaponType")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "FPS|WeaponType")
 	FGameplayTag WeaponType;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FPS|Aiming")
+	float AimFieldOfView;
 
 protected:
 	// Called when the game starts or when spawned

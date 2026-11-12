@@ -19,6 +19,7 @@ AWeapon::AWeapon()
 	//Mesh1P->SetHiddenInGame(true);
 	SetRootComponent(Mesh1P);
 
+	AimFieldOfView = 65.f;
 }
 
 USkeletalMeshComponent* AWeapon::GetMesh1P() const

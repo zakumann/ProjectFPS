@@ -59,21 +59,11 @@ void UCombatComponent::Initiate_ReloadWeapon()
 }
 void UCombatComponent::Initiate_Aim_Pressed()
 {
-	GEngine->AddOnScreenDebugMessage(
-		-1,
-		5.f,
-		FColor::Cyan,
-		TEXT("Initiate_Aim_Pressed"),
-		false);
+	bAiming = true;
 }
 void UCombatComponent::Initiate_Aim_Released()
 {
-	GEngine->AddOnScreenDebugMessage(
-		-1,
-		5.f,
-		FColor::Cyan,
-		TEXT("Initiate_Aim_Released"),
-		false);
+	bAiming = false;
 }
 
 void UCombatComponent::Equip(AWeapon* Weapon)

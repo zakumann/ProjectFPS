@@ -10,6 +10,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Combat/CombatComponent.h"
+#include "Weapon/Weapon.h"
 
 // Sets default values
 AFPSCharacter::AFPSCharacter()
@@ -44,6 +45,8 @@ AFPSCharacter::AFPSCharacter()
 	GetMesh()->bReceivesDecals = false;
 
 	Combat = CreateDefaultSubobject<UCombatComponent>("Combat");
+
+	DefaultFieldOfView = 90.f;
 }
 
 // Called when the game starts or when spawned
@@ -51,6 +54,7 @@ void AFPSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	FirstPersonCamera->SetFieldOfView(DefaultFieldOfView);
 }
 
 void AFPSCharacter::BeginDestroy()
@@ -67,6 +71,29 @@ void AFPSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	CalculateFABRIKSocketTransform();
+}
+
+
+void AFPSCharacter::CalculateFABRIKSocketTransform()
+{
+	// If Combatcomponent, CurrentWeaopn and GetMesh1P
+	if (IsValid(Combat) && IsValid(Combat->CurrentWeapon) && IsValid(Combat->CurrentWeapon->GetMesh1P()))
+	{
+		FABRIK_SocketTransform = Combat->CurrentWeapon->GetMesh1P()->GetSocketTransform("FABRIK_Socket", RTS_World);
+
+		FVector OutLocation;
+		FRotator OutRotation;
+
+		Mesh1P->TransformToBoneSpace(
+			"hand_r",
+			FABRIK_SocketTransform.GetLocation(),
+			FABRIK_SocketTransform.GetRotation().Rotator(),
+			OutLocation,
+			OutRotation);
+		FABRIK_SocketTransform.SetLocation(OutLocation);
+		FABRIK_SocketTransform.SetRotation(OutRotation.Quaternion());
+	}
 }
 
 // Called to bind functionality to input
@@ -126,10 +153,19 @@ void AFPSCharacter::Input_FireWeapon_Released()
 
 void AFPSCharacter::Input_Aim_Pressed()
 {
+	// if CombatComponent, CurrentWeapon, or FirstPersonCamera is not valid, then not happen anything. 
+	if (!IsValid(Combat) || !IsValid(Combat->CurrentWeapon) || !IsValid(FirstPersonCamera)) return;
+
 	Combat->Initiate_Aim_Pressed();
+	FirstPersonCamera->SetFieldOfView(Combat->CurrentWeapon->AimFieldOfView);
+	OnAim(true);
 }
 
 void AFPSCharacter::Input_Aim_Released()
 {
+	if (!IsValid(Combat) || !IsValid(Combat->CurrentWeapon) || !IsValid(FirstPersonCamera)) return;
+
 	Combat->Initiate_Aim_Released();
+	FirstPersonCamera->SetFieldOfView(DefaultFieldOfView);
+	OnAim(false);
 }

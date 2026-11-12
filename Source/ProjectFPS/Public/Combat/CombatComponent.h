@@ -30,17 +30,21 @@ public:
 	void Initiate_Aim_Pressed();
 	void Initiate_Aim_Released();
 
-	UPROPERTY(EditDefaultsOnly, Category = "FPS|Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FPS|Weapon")
 	TObjectPtr<UWeaponData> WeaponData;
 
 	void Equip(AWeapon* Weapon);
 	void SpawnInventory();
 	void DestroyInventory();
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bAiming;
+
+	UPROPERTY(Transient, BlueprintReadOnly)
+	TObjectPtr<AWeapon> CurrentWeapon;
 protected:
 
 private:
-	UPROPERTY(Transient)
-	TObjectPtr<AWeapon> CurrentWeapon;
 
 	UPROPERTY(Transient)
 	TArray<AWeapon*> Inventory;

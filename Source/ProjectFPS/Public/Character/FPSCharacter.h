@@ -8,10 +8,10 @@
 #include "FPSCharacter.generated.h"
 
 class USkeletalMeshComponent;
-class USpringArmComponent;
-class UCameraComponent;
-class UInputAction;
 class UCombatComponent;
+class UCameraComponent;
+class USpringArmComponent;
+class UInputAction;
 
 UCLASS()
 class PROJECTFPS_API AFPSCharacter : public ACharacter, public IPlayerInterface
@@ -38,23 +38,36 @@ public:
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
 
+	UPROPERTY(BlueprintReadOnly, Category = "FPS|FABRIK")
+	FTransform FABRIK_SocketTransform;
+
 protected:
 	// Called when the game starts or when spawned
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FPS|Combat")
+	TObjectPtr<UCombatComponent> Combat;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "FPS|Camera")
+	TObjectPtr<UCameraComponent> FirstPersonCamera;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "FPS|Aiming")
+	float DefaultFieldOfView;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnAim(bool bIsAiming);
 
 private:
-
+	// Equie
 	void Input_CycleWeapon();
-
+	// Reload
 	void Input_ReloadWeapon();
-
+	// Fire
 	void Input_FireWeapon_Pressed();
 	void Input_FireWeapon_Released();
-
+	// Aiming
 	void Input_Aim_Pressed();
 	void Input_Aim_Released();
 
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UCombatComponent> Combat;
+	void CalculateFABRIKSocketTransform();
 
 	// 1st person view (arms)
 	UPROPERTY(VisibleAnywhere)
@@ -62,9 +75,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USpringArmComponent> SpringArm;
-
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UCameraComponent> FirstPersonCamera;
 
 	UPROPERTY(EditAnywhere, Category = "FPS|Input")
 	TObjectPtr<UInputAction> CycleWeaponAction;
