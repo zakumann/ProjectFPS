@@ -4,10 +4,12 @@
 #include "Character/FPSCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Weapon/WeaponBase.h"
 
 // Sets default values
 AFPSCharacter::AFPSCharacter()
@@ -20,6 +22,20 @@ AFPSCharacter::AFPSCharacter()
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(0.f, 0.f, DefaultEyeHeight));
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;	// Mouse rotation
 
+	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>("FirstPersonArmsMesh");
+	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
+	Mesh1P->SetOnlyOwnerSee(true);           // 본인(플레이어) 화면에만 렌더링
+	Mesh1P->bCastDynamicShadow = false;      // 1인칭 팔의 어색한 그림자 제거
+	Mesh1P->CastShadow = false;
+	Mesh1P->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 벽 뚫림/밀림 방지
+	// 카메라 기준 기본 위치/회전 오프셋 (에디터 뷰포트에서 사용하는 팔 에셋에 맞춰 미세 조정)
+	Mesh1P->SetRelativeLocation(FVector(0.f, 0.f, -155.f));
+	Mesh1P->SetRelativeRotation(FRotator(0.f, -90.f, 0.f));
+
+	GetMesh()->SetVisibility(false);
+	GetMesh()->SetHiddenInGame(true);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 	GetCharacterMovement()->MaxWalkSpeed = DefaultSpeed;
 	GetCharacterMovement()->MaxWalkSpeedCrouched = CrouchSpeed;
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
@@ -31,7 +47,7 @@ AFPSCharacter::AFPSCharacter()
 void AFPSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	// EnhancedInput -> Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -43,6 +59,21 @@ void AFPSCharacter::BeginPlay()
 			}
 		}
 	}
+
+	if (DefaultWeaponClass && Mesh1P)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = GetInstigator();
+
+		// 무기 액터 월드에 스폰 후 팔 메시 소켓에 장착
+		CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(DefaultWeaponClass, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+		if (CurrentWeapon)
+		{
+			CurrentWeapon->EquipToCharacter(Mesh1P);
+		}
+	}
+
 }
 
 // Called every frame
@@ -50,7 +81,7 @@ void AFPSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (FirstPersonCameraComponent)
+	if (Mesh1P)
 	{
 		const float TargetZ = bIsCrouched ? CrouchEyeHeight : DefaultEyeHeight;
 		FVector CurrentLocation = FirstPersonCameraComponent->GetRelativeLocation();
@@ -82,6 +113,8 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EIC->BindAction(SprintAction, ETriggerEvent::Completed, this, &AFPSCharacter::StopSprint);
 		// Crouch
 		EIC->BindAction(CrouchAction, ETriggerEvent::Started, this, &AFPSCharacter::ToggleCrouch);
+		// Fire
+		EIC->BindAction(FireAction, ETriggerEvent::Started, this, &AFPSCharacter::FireWeapon);
 	}
 }
 
@@ -115,10 +148,14 @@ void AFPSCharacter::Look(const FInputActionValue & Value)
 
 void AFPSCharacter::StartSprint()
 {
+	if (bIsCrouched) return;
+
+	bIsSprinting = true;
 	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 }
 void AFPSCharacter::StopSprint()
 {
+	bIsSprinting = false;
 	GetCharacterMovement()->MaxWalkSpeed = DefaultSpeed;
 }
 void AFPSCharacter::ToggleCrouch()
@@ -133,4 +170,13 @@ void AFPSCharacter::ToggleCrouch()
 		Crouch();
 	}
 	
+}
+
+// 클래스 하단에 함수 구현 추가
+void AFPSCharacter::FireWeapon()
+{
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Fire();
+	}
 }

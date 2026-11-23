@@ -9,6 +9,8 @@
 class UInputMappingContext;
 class UInputAction;
 class UCameraComponent;
+class USkeletalMeshComponent;
+class AWeaponBase;
 struct FInputActionValue;
 
 UCLASS()
@@ -20,6 +22,8 @@ public:
 	// Sets default values for this character's properties
 	AFPSCharacter();
 
+	UFUNCTION(BlueprintPure, Category = "Movement")
+	bool IsSprinting() const { return bIsSprinting; }
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -32,6 +36,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<UCameraComponent> FirstPersonCameraComponent;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Mesh")
+	TObjectPtr<USkeletalMeshComponent> Mesh1P;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "EnhancedInput")
 	TObjectPtr<UInputMappingContext> FirstPersonMappingContext;
@@ -50,6 +57,16 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "EnhancedInput")
 	TObjectPtr<UInputAction> CrouchAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "EnhancedInput")
+	TObjectPtr<UInputAction> FireAction;
+
+	// ============= Weapon classes
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	TSubclassOf<AWeaponBase> DefaultWeaponClass;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Weapon")
+	TObjectPtr<AWeaponBase> CurrentWeapon;
 
 	// ============== Move Speed
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
@@ -76,6 +93,7 @@ protected:
 	void StartSprint();
 	void StopSprint();
 	void ToggleCrouch();
-public:	
+	void FireWeapon();
 
+	bool bIsSprinting = false;
 };
